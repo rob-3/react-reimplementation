@@ -1,6 +1,16 @@
-import { useState } from 'react'
+/** @jsxRuntime classic */
+import RealReact, { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
+
+const React = {
+  createElement: (...args: any[]) => {
+    // @ts-ignore
+    const result = RealReact.createElement(...args)
+    console.log(result)
+    return result
+  }
+}
 
 function App() {
   const [count, setCount] = useState(0)
