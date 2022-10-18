@@ -73,13 +73,19 @@ const rerender = () => {
   willRerender = false;
 };
 
-export const useState = <T,>(initialState: T): [T, (t: T) => void] => {
+type Setter<T> = (t: T) => T;
+
+export const useState = <T,>(initialState: T): [T, (valueOrFunction: T | Setter<T>) => void] => {
   if (isFirstTime) {
     state = initialState;
     isFirstTime = false;
   }
-  return [state, (newValue: T) => { 
-    state = newValue
+  return [state, (valOrFunction: T | Setter<T>) => { 
+    if (typeof valOrFunction === 'function') {
+      state = (valOrFunction as any)(state);
+    } else {
+      state = valOrFunction
+    }
     if (willRerender === false) {
       willRerender = true;
       setTimeout(rerender, 0);
