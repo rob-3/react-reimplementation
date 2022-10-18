@@ -39,6 +39,10 @@ const reactTreeToDOM = (reactTree: ReactElement): (HTMLElement | Text)[] => {
     for (const [key, value] of Object.entries(otherProps)) {
       if (key === 'className') {
         element.className = value as string;
+      } else if (key === 'onClick') {
+        element.addEventListener('click', value as EventListener);
+      } else if (key.startsWith('__')) {
+        continue;
       } else {
         element.setAttribute(key, value as string);
       }
@@ -54,12 +58,36 @@ const ReactDOM = {
   createRoot: (root: HTMLElement) => {
     return {
       render: (reactRoot: ReactElement) => {
-        root.append(...reactTreeToDOM(reactRoot));
+        root.replaceChildren(...reactTreeToDOM(reactRoot));
       }
     }
   }
 }
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+
+let state: any = null;
+let isFirstTime = true;
+let willRerender = false;
+const rerender = () => { 
+  root.render(<App />)
+  willRerender = false;
+};
+
+export const useState = <T,>(initialState: T): [T, (t: T) => void] => {
+  if (isFirstTime) {
+    state = initialState;
+    isFirstTime = false;
+  }
+  return [state, (newValue: T) => { 
+    state = newValue
+    if (willRerender === false) {
+      willRerender = true;
+      setTimeout(rerender, 0);
+    }
+  }];
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement); 
+root.render(
   <App />
 )
