@@ -1,19 +1,11 @@
 /** @jsxRuntime classic */
-import RealReact, { useState } from 'react'
+//import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
-
-const React = {
-  createElement: (...args: any[]) => {
-    // @ts-ignore
-    const result = RealReact.createElement(...args)
-    console.log(result)
-    return result
-  }
-}
+import { React } from './main'
 
 function App() {
-  const [count, setCount] = useState(0)
+  //const [count, setCount] = useState(0)
 
   return (
     <div className="App">
@@ -27,9 +19,11 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
+        {/*
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
         </button>
+        */}
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
