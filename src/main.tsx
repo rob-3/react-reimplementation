@@ -65,26 +65,30 @@ const ReactDOM = {
 }
 
 
-let state: any = null;
-let isFirstTime = true;
+let state: any[] = [];
+let hasUsedDefault: boolean[] = [];
 let willRerender = false;
 const rerender = () => { 
+  index = 0;
   root.render(<App />)
   willRerender = false;
 };
 
 type Setter<T> = (t: T) => T;
 
+let index = 0;
 export const useState = <T,>(initialState: T): [T, (valueOrFunction: T | Setter<T>) => void] => {
-  if (isFirstTime) {
-    state = initialState;
-    isFirstTime = false;
+  const i = index;
+  index++;
+  if (!hasUsedDefault[i]) {
+    state[i] = initialState;
+    hasUsedDefault[i] = true;
   }
-  return [state, (valOrFunction: T | Setter<T>) => { 
+  return [state[i], (valOrFunction: T | Setter<T>) => { 
     if (typeof valOrFunction === 'function') {
-      state = (valOrFunction as any)(state);
+      state[i] = (valOrFunction as any)(state[i]);
     } else {
-      state = valOrFunction
+      state[i] = valOrFunction
     }
     if (willRerender === false) {
       willRerender = true;
@@ -93,7 +97,7 @@ export const useState = <T,>(initialState: T): [T, (valueOrFunction: T | Setter<
   }];
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement); 
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <App />
 )
