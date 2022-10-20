@@ -4,11 +4,30 @@ import './index.css'
 
 type FunctionComponent = (props: any) => ReactElement
 
-type ReactElement = string | number | null | {
+export type ReactElement = string | number | null | {
   type: string | FunctionComponent,
   props: {
     [key: string]: unknown,
     children: ReactElement[],
+  },
+}
+
+export type StringNode = {
+  kind: 'string',
+  value: string,
+}
+
+export type NumberNode = {
+  kind: 'number',
+  value: number,
+}
+
+export type EvaluatedTree = null | StringNode | NumberNode | {
+  kind: 'html',
+  type: string,
+  props: {
+    [key: string]: unknown,
+    children: EvaluatedTree[],
   },
 }
 
@@ -24,42 +43,72 @@ export const React = {
   }
 }
 
-const reactTreeToDOM = (reactTree: ReactElement): (HTMLElement | Text)[] => {
+const evaluateElement = (reactTree: ReactElement): EvaluatedTree => {
   if (reactTree === null) {
-    return [];
+    return null;
   }
 
-  if (typeof reactTree === 'string' || typeof reactTree === 'number') {
-    return [document.createTextNode(reactTree.toString())];
+  if (typeof reactTree === 'string') {
+    return {
+      kind: 'string',
+      value: reactTree,
+    }
+  }
+  if (typeof reactTree === 'number') {
+    return {
+      kind: 'number',
+      value: reactTree,
+    }
   }
 
   const { type, props } = reactTree;
   if (typeof type ==='string') {
-    const element = document.createElement(type);
-    const { children, ...otherProps } = props;
-    for (const [key, value] of Object.entries(otherProps)) {
-      if (key === 'className') {
-        element.className = value as string;
-      } else if (key === 'onClick') {
-        element.addEventListener('click', value as EventListener);
-      } else if (key.startsWith('__')) {
-        continue;
-      } else {
-        element.setAttribute(key, value as string);
+    const evaluatedChildren = props.children.map(evaluateElement);
+    return {
+      kind: 'html',
+      type,
+      props: {
+        ...props,
+        children: evaluatedChildren,
       }
     }
-    const domChildren = children.flatMap(reactTreeToDOM);
-    element.append(...domChildren);
-    return [element];
   }
-  return reactTreeToDOM(type(props));
+  return evaluateElement(type(props));
+}
+
+const renderTree = (reactTree: EvaluatedTree): (HTMLElement | Text)[] => {
+  if (reactTree === null) {
+    return [];
+  }
+
+  if (reactTree.kind === 'number' || reactTree.kind === 'string') {
+      return [document.createTextNode(reactTree.value.toString())];
+  }
+
+  const { type, props } = reactTree;
+  const element = document.createElement(type);
+  const { children, ...otherProps } = props;
+  for (const [key, value] of Object.entries(otherProps)) {
+    if (key === 'className') {
+      element.className = value as string;
+    } else if (key === 'onClick') {
+      element.addEventListener('click', value as EventListener);
+    } else if (key.startsWith('__')) {
+      continue;
+    } else {
+      element.setAttribute(key, value as string);
+    }
+  }
+  const domChildren = children.flatMap(renderTree);
+  element.append(...domChildren);
+  return [element];
 }
 
 const ReactDOM = {
   createRoot: (root: HTMLElement) => {
     return {
       render: (reactRoot: ReactElement) => {
-        root.replaceChildren(...reactTreeToDOM(reactRoot));
+        root.replaceChildren(...renderTree(evaluateElement(reactRoot)));
       }
     }
   }
