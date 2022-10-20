@@ -79,15 +79,15 @@ const evaluateElement = (reactTree: ReactElement): EvaluatedTree => {
   return evaluateElement(type(props));
 }
 
-const renderTree = (reactTree: EvaluatedTree): (HTMLElement | Text)[] => {
+export const renderTree = (reactTree: EvaluatedTree): HTMLElement | Text | null => {
   if (reactTree === null) {
-    return [];
+    return null;
   }
 
   if (reactTree.kind === 'number' || reactTree.kind === 'string') {
     const textNode = document.createTextNode(reactTree.value.toString());
     reactTree.node = textNode;
-    return [textNode];
+    return textNode;
   }
 
   const { type, props } = reactTree;
@@ -104,10 +104,10 @@ const renderTree = (reactTree: EvaluatedTree): (HTMLElement | Text)[] => {
       element.setAttribute(key, value as string);
     }
   }
-  const domChildren = children.flatMap(renderTree);
+  const domChildren = children.map(renderTree).filter((x): x is NonNullable<Text | HTMLElement> => !!x);
   element.append(...domChildren);
   reactTree.node = element;
-  return [element];
+  return element;
 }
 
 const ReactDOM = {
@@ -115,7 +115,10 @@ const ReactDOM = {
     return {
       render: (reactRoot: ReactElement) => {
         const evaluatedTree = evaluateElement(reactRoot);
-        root.replaceChildren(...renderTree(evaluatedTree));
+        const renderedTree = renderTree(evaluatedTree);
+        if (renderedTree) {
+          root.replaceChildren(renderedTree);
+        }
         console.log(evaluatedTree);
       }
     }
