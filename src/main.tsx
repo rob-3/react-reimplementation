@@ -15,11 +15,13 @@ export type ReactElement = string | number | null | {
 export type StringNode = {
   kind: 'string',
   value: string,
+  node?: Text,
 }
 
 export type NumberNode = {
   kind: 'number',
   value: number,
+  node?: Text,
 }
 
 export type EvaluatedTree = null | StringNode | NumberNode | {
@@ -29,6 +31,7 @@ export type EvaluatedTree = null | StringNode | NumberNode | {
     [key: string]: unknown,
     children: EvaluatedTree[],
   },
+  node?: HTMLElement,
 }
 
 export const React = {
@@ -82,7 +85,9 @@ const renderTree = (reactTree: EvaluatedTree): (HTMLElement | Text)[] => {
   }
 
   if (reactTree.kind === 'number' || reactTree.kind === 'string') {
-      return [document.createTextNode(reactTree.value.toString())];
+    const textNode = document.createTextNode(reactTree.value.toString());
+    reactTree.node = textNode;
+    return [textNode];
   }
 
   const { type, props } = reactTree;
@@ -101,6 +106,7 @@ const renderTree = (reactTree: EvaluatedTree): (HTMLElement | Text)[] => {
   }
   const domChildren = children.flatMap(renderTree);
   element.append(...domChildren);
+  reactTree.node = element;
   return [element];
 }
 
@@ -108,7 +114,9 @@ const ReactDOM = {
   createRoot: (root: HTMLElement) => {
     return {
       render: (reactRoot: ReactElement) => {
-        root.replaceChildren(...renderTree(evaluateElement(reactRoot)));
+        const evaluatedTree = evaluateElement(reactRoot);
+        root.replaceChildren(...renderTree(evaluatedTree));
+        console.log(evaluatedTree);
       }
     }
   }
