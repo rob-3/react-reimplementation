@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 import App from './App'
 import './index.css'
 
