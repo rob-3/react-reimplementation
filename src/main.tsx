@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 import App from './App'
+import { reconcile } from './diff'
 import './index.css'
 
 type FunctionComponent = (props: any) => ReactElement
@@ -110,16 +111,29 @@ export const renderTree = (reactTree: EvaluatedTree): HTMLElement | Text | null 
   return element;
 }
 
+let oldTree: EvaluatedTree = null;
 const ReactDOM = {
   createRoot: (root: HTMLElement) => {
     return {
       render: (reactRoot: ReactElement) => {
-        const evaluatedTree = evaluateElement(reactRoot);
-        const renderedTree = renderTree(evaluatedTree);
-        if (renderedTree) {
-          root.replaceChildren(renderedTree);
+        if (!oldTree) {
+          oldTree = evaluateElement(reactRoot);
+          const renderedTree = renderTree(oldTree);
+          if (renderedTree) {
+            root.replaceChildren(renderedTree);
+          }
+        } else {
+          const evaluatedTree = evaluateElement(reactRoot);
+          reconcile(oldTree, evaluatedTree!);
+          oldTree = evaluatedTree;
+          /*
+          const renderedTree = renderTree(evaluatedTree);
+          if (renderedTree) {
+            root.replaceChildren(renderedTree);
+          }
+          */
+          console.log(evaluatedTree);
         }
-        console.log(evaluatedTree);
       }
     }
   }
