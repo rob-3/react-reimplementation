@@ -124,7 +124,7 @@ const ReactDOM = {
           }
         } else {
           const evaluatedTree = evaluateElement(reactRoot);
-          reconcile(oldTree, evaluatedTree!);
+          reconcile(oldTree as Required<NonNullable<EvaluatedTree>>, evaluatedTree!);
           oldTree = evaluatedTree;
           /*
           const renderedTree = renderTree(evaluatedTree);
