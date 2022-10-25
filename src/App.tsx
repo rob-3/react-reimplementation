@@ -2,11 +2,16 @@
 //import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import './App.css'
-import { React, useState } from './main'
+import { React, useState, useEffect } from './main'
 
 function App() {
   const [count, setCount] = useState(0)
   const [count2, setCount2] = useState(0)
+
+  useEffect(() => {
+    document.title = count.toString();
+    console.log(count);
+  }, [count])
 
   return (
     <div className="App">

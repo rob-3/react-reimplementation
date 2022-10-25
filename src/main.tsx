@@ -172,6 +172,25 @@ export const useState = <T,>(initialState: T): [T, (valueOrFunction: T | Setter<
   }];
 }
 
+export const useEffect = (f: () => (void | (() => void)), deps: unknown[]) => {
+  const i = index;
+  index++;
+  if (!hasUsedDefault[i]) {
+    state[i] = deps;
+    hasUsedDefault[i] = true;
+    setTimeout(f, 0);
+  } else {
+    const oldDeps = state[i];
+    for (let i = 0; i < deps.length; i++) {
+      if (oldDeps[i] !== deps[i]) {
+        setTimeout(f, 0);
+        break;
+      }
+    }
+    state[i] = deps;
+  }
+}
+
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <App />
