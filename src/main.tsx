@@ -3,6 +3,8 @@ import App from './App'
 import { reconcile } from './diff'
 import './index.css'
 
+const taskQueue: any[] = [];
+
 type FunctionComponent = (props: any) => ReactElement
 
 export type ReactElement = string | number | boolean | undefined | null | {
@@ -124,10 +126,15 @@ const ReactDOM = {
   createRoot: (root: HTMLElement) => {
     return {
       render: (reactRoot: ReactElement) => {
-          const evaluatedTree = evaluateElement(reactRoot);
-          reconcile(oldTree, evaluatedTree as EvaluatedTree, root);
-          oldTree = evaluatedTree as EvaluatedTree;
-          console.log(evaluatedTree);
+        const evaluatedTree = evaluateElement(reactRoot);
+        reconcile(oldTree, evaluatedTree as EvaluatedTree, root);
+        oldTree = evaluatedTree as EvaluatedTree;
+        console.log(evaluatedTree);
+        console.log('running effects: ')
+        while (taskQueue.length) {
+          const task = taskQueue.shift();
+          task();
+        }
       }
     }
   }
@@ -172,12 +179,12 @@ export const useEffect = (f: () => (void | (() => void)), deps: unknown[]) => {
   if (!hasUsedDefault[i]) {
     state[i] = deps;
     hasUsedDefault[i] = true;
-    setTimeout(f, 0);
+    taskQueue.push(f);
   } else {
     const oldDeps = state[i];
     for (let i = 0; i < deps.length; i++) {
       if (oldDeps[i] !== deps[i]) {
-        setTimeout(f, 0);
+        taskQueue.push(f);
         break;
       }
     }
