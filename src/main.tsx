@@ -47,7 +47,7 @@ export const React = {
   }
 }
 
-const evaluateElement = (reactTree: ReactElement): EvaluatedTree => {
+const evaluateElement = (reactTree: ReactElement): EvaluatedTree | EvaluatedTree[] => {
   if (reactTree === null || reactTree === undefined) {
     return null;
   }
@@ -69,9 +69,13 @@ const evaluateElement = (reactTree: ReactElement): EvaluatedTree => {
     }
   }
 
+  if (Array.isArray(reactTree)) {
+    return reactTree.flatMap(evaluateElement);
+  }
+
   const { type, props } = reactTree;
   if (typeof type ==='string') {
-    const evaluatedChildren = props.children.map(evaluateElement);
+    const evaluatedChildren = props.children.flatMap(evaluateElement);
     return {
       kind: 'html',
       type,
@@ -121,8 +125,8 @@ const ReactDOM = {
     return {
       render: (reactRoot: ReactElement) => {
           const evaluatedTree = evaluateElement(reactRoot);
-          reconcile(oldTree, evaluatedTree, root);
-          oldTree = evaluatedTree;
+          reconcile(oldTree, evaluatedTree as EvaluatedTree, root);
+          oldTree = evaluatedTree as EvaluatedTree;
           console.log(evaluatedTree);
       }
     }
