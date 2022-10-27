@@ -120,24 +120,10 @@ const ReactDOM = {
   createRoot: (root: HTMLElement) => {
     return {
       render: (reactRoot: ReactElement) => {
-        if (!oldTree) {
-          oldTree = evaluateElement(reactRoot);
-          const renderedTree = renderTree(oldTree);
-          if (renderedTree) {
-            root.replaceChildren(renderedTree);
-          }
-        } else {
           const evaluatedTree = evaluateElement(reactRoot);
-          reconcile(oldTree as Required<NonNullable<EvaluatedTree>>, evaluatedTree!, root);
+          reconcile(oldTree, evaluatedTree, root);
           oldTree = evaluatedTree;
-          /*
-          const renderedTree = renderTree(evaluatedTree);
-          if (renderedTree) {
-            root.replaceChildren(renderedTree);
-          }
-          */
           console.log(evaluatedTree);
-        }
       }
     }
   }

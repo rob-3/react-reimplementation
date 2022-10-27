@@ -1,6 +1,6 @@
 import { EvaluatedTree, renderTree } from "./main";
 
-export const reconcile = (oldTree: Required<EvaluatedTree>, newTree: EvaluatedTree, parent: HTMLElement) => {
+export const reconcile = (oldTree: EvaluatedTree, newTree: EvaluatedTree, parent: HTMLElement) => {
 	if (!oldTree && !newTree) {
 		return;
 	}
@@ -17,19 +17,19 @@ export const reconcile = (oldTree: Required<EvaluatedTree>, newTree: EvaluatedTr
 	}
 	if (oldTree.kind !== newTree.kind) {
 		newTree.node = renderTree(newTree)!;
-		oldTree.node.replaceWith(newTree.node);
+		oldTree.node!.replaceWith(newTree.node);
 		return;
 	}
 	if (oldTree.kind === 'string' && newTree.kind === 'string') {
 		if (oldTree.value.toString() !== newTree.value.toString()) {
-			oldTree.node.textContent = newTree.value.toString();
+			oldTree.node!.textContent = newTree.value.toString();
 		}
 		newTree.node = oldTree.node;
 		return;
 	}
 	if (oldTree.kind === 'number' && newTree.kind === 'number') {
 		if (oldTree.value.toString() !== newTree.value.toString()) {
-			oldTree.node.textContent = newTree.value.toString();
+			oldTree.node!.textContent = newTree.value.toString();
 		}
 		newTree.node = oldTree.node;
 		return;
@@ -37,7 +37,7 @@ export const reconcile = (oldTree: Required<EvaluatedTree>, newTree: EvaluatedTr
 	if (oldTree.kind === 'html' && newTree.kind === 'html') {
 		if (oldTree.type !== newTree.type) {
 			newTree.node = renderTree(newTree) as HTMLElement;
-			oldTree.node.replaceWith(newTree.node!);
+			oldTree.node!.replaceWith(newTree.node!);
 			return;
 		}
 		const { children, onClick, ...props } = newTree.props;
@@ -54,13 +54,13 @@ export const reconcile = (oldTree: Required<EvaluatedTree>, newTree: EvaluatedTr
 			}
 			oldNode.setAttribute(key, String(value));
 		}
-		oldTree.node.removeEventListener('click', oldTree.props.onClick as EventListenerOrEventListenerObject);
+		oldTree.node!.removeEventListener('click', oldTree.props.onClick as EventListenerOrEventListenerObject);
 		if (typeof onClick === 'function') {
-			oldTree.node.addEventListener('click', onClick as EventListenerOrEventListenerObject);
+			oldTree.node!.addEventListener('click', onClick as EventListenerOrEventListenerObject);
 		}
 		let i = 0;
 		while (i < oldTree.props.children.length) {
-			reconcile(oldTree.props.children[i] as Required<NonNullable<EvaluatedTree>>, children[i], oldTree.node);
+			reconcile(oldTree.props.children[i], children[i], oldTree.node!);
 			i++;
 		}
 		while (i < children.length) {
