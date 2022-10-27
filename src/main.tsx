@@ -5,7 +5,7 @@ import './index.css'
 
 type FunctionComponent = (props: any) => ReactElement
 
-export type ReactElement = string | number | null | {
+export type ReactElement = string | number | boolean | undefined | null | {
   type: string | FunctionComponent,
   props: {
     [key: string]: unknown,
@@ -48,7 +48,11 @@ export const React = {
 }
 
 const evaluateElement = (reactTree: ReactElement): EvaluatedTree => {
-  if (reactTree === null) {
+  if (reactTree === null || reactTree === undefined) {
+    return null;
+  }
+
+  if (typeof reactTree === 'boolean') {
     return null;
   }
 
@@ -124,7 +128,7 @@ const ReactDOM = {
           }
         } else {
           const evaluatedTree = evaluateElement(reactRoot);
-          reconcile(oldTree as Required<NonNullable<EvaluatedTree>>, evaluatedTree!);
+          reconcile(oldTree as Required<NonNullable<EvaluatedTree>>, evaluatedTree!, root);
           oldTree = evaluatedTree;
           /*
           const renderedTree = renderTree(evaluatedTree);

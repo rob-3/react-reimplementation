@@ -1,6 +1,15 @@
 import { EvaluatedTree, renderTree } from "./main";
 
-export const reconcile = (oldTree: Required<NonNullable<EvaluatedTree>>, newTree: EvaluatedTree) => {
+export const reconcile = (oldTree: Required<EvaluatedTree>, newTree: EvaluatedTree, parent: HTMLElement) => {
+	if (!oldTree && !newTree) {
+		return;
+	}
+
+	if (!oldTree) {
+		parent.append(renderTree(newTree)!);
+		return;
+	}
+
 	if (!newTree) {
 		const oldNode = oldTree.node;
 		oldNode?.parentElement?.removeChild(oldNode);
@@ -51,7 +60,7 @@ export const reconcile = (oldTree: Required<NonNullable<EvaluatedTree>>, newTree
 		}
 		let i = 0;
 		while (i < oldTree.props.children.length) {
-			reconcile(oldTree.props.children[i] as Required<NonNullable<EvaluatedTree>>, children[i]);
+			reconcile(oldTree.props.children[i] as Required<NonNullable<EvaluatedTree>>, children[i], oldTree.node);
 			i++;
 		}
 		while (i < children.length) {
