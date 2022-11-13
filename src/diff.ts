@@ -1,6 +1,6 @@
-import { EvaluatedTree, renderTree } from "./main";
+import { DOMTree, renderTree } from "./main";
 
-export const reconcile = (oldTree: EvaluatedTree, newTree: EvaluatedTree, parent: HTMLElement) => {
+export const reconcile = (oldTree: DOMTree, newTree: DOMTree, parent: HTMLElement) => {
 	if (!oldTree && !newTree) {
 		return;
 	}

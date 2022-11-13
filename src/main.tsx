@@ -5,13 +5,13 @@ import './index.css'
 
 const taskQueue: any[] = [];
 
-type FunctionComponent = (props: any) => ReactElement
+type FunctionComponent = (props: any) => ReactTree
 
-export type ReactElement = string | number | boolean | undefined | null | {
+export type ReactTree = string | number | boolean | undefined | null | {
   type: string | FunctionComponent,
   props: {
     [key: string]: unknown,
-    children: ReactElement[],
+    children: ReactTree[],
   },
 }
 
@@ -27,18 +27,18 @@ export type NumberNode = {
   node?: Text,
 }
 
-export type EvaluatedTree = null | StringNode | NumberNode | {
+export type DOMTree = null | StringNode | NumberNode | {
   kind: 'html',
   type: string,
   props: {
     [key: string]: unknown,
-    children: EvaluatedTree[],
+    children: DOMTree[],
   },
   node?: HTMLElement,
 }
 
 export const React = {
-  createElement: (type: string | FunctionComponent, props: Record<string, {}>, ...children: any[]): ReactElement => {
+  createElement: (type: string | FunctionComponent, props: Record<string, {}>, ...children: any[]): ReactTree => {
     return {
       type,
       props: {
@@ -49,7 +49,7 @@ export const React = {
   }
 }
 
-const evaluateElement = (reactTree: ReactElement): EvaluatedTree | EvaluatedTree[] => {
+const evaluateElement = (reactTree: ReactTree): DOMTree | DOMTree[] => {
   if (reactTree === null || reactTree === undefined) {
     return null;
   }
@@ -90,7 +90,7 @@ const evaluateElement = (reactTree: ReactElement): EvaluatedTree | EvaluatedTree
   return evaluateElement(type(props));
 }
 
-export const renderTree = (reactTree: EvaluatedTree): HTMLElement | Text | null => {
+export const renderTree = (reactTree: DOMTree): HTMLElement | Text | null => {
   if (reactTree === null) {
     return null;
   }
@@ -121,14 +121,14 @@ export const renderTree = (reactTree: EvaluatedTree): HTMLElement | Text | null 
   return element;
 }
 
-let oldTree: EvaluatedTree = null;
+let oldTree: DOMTree = null;
 const ReactDOM = {
   createRoot: (root: HTMLElement) => {
     return {
-      render: (reactRoot: ReactElement) => {
+      render: (reactRoot: ReactTree) => {
         const evaluatedTree = evaluateElement(reactRoot);
-        reconcile(oldTree, evaluatedTree as EvaluatedTree, root);
-        oldTree = evaluatedTree as EvaluatedTree;
+        reconcile(oldTree, evaluatedTree as DOMTree, root);
+        oldTree = evaluatedTree as DOMTree;
         console.log(evaluatedTree);
         console.log('running effects: ')
         while (taskQueue.length) {
